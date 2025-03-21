@@ -45,7 +45,13 @@ def get_ape_info(ape_id):
 
     # step 4: Extract image and eyes attributes
     data['image'] = metadata['image']
-    data['eyes'] = metadata['attributes'][1]['value']  # assume 'eyes' is the second attribute
+    # find the 'Eyes' attribute in the metadata
+    for attribute in metadata['attributes']:
+        if attribute['trait_type'] == 'Eyes':  # ensure the trait_type is 'Eyes' (case-sensitive)
+            data['eyes'] = attribute['value']
+            break
+    else:
+        data['eyes'] = "Unknown"  # fallback if 'Eyes' attribute is not found
 
     assert isinstance(data, dict), f'get_ape_info{ape_id} should return a dict'
     assert all([a in data.keys() for a in

@@ -37,21 +37,20 @@ def get_ape_info(ape_id):
     # step 2: get the tokenURI for the ape
     token_uri = contract.functions.tokenURI(ape_id).call()
     
-    # step 3: Fetch metadata from IPFS
-    # Replace 'ipfs://' with 'https://ipfs.io/ipfs/' to use the public IPFS gateway
-    ipfs_url = token_uri.replace("ipfs://", "https://ipfs.io/ipfs/")
+    # step 3: fetch metadata from IPFS
+    ipfs_url = token_uri.replace("ipfs://", "https://ipfs.io/ipfs/") # replace 'ipfs://' with 'https://ipfs.io/ipfs/' to use the public IPFS gateway
     response = requests.get(ipfs_url)
     metadata = response.json()
 
-    # step 4: Extract image and eyes attributes
+    # step 4: extract image and eyes attributes
     data['image'] = metadata['image']
     # find the 'Eyes' attribute in the metadata
     for attribute in metadata['attributes']:
-        if attribute['trait_type'] == 'Eyes':  # ensure the trait_type is 'Eyes' (case-sensitive)
+        if attribute['trait_type'] == 'Eyes':  # trait_type is 'Eyes' 
             data['eyes'] = attribute['value']
             break
     else:
-        data['eyes'] = "Unknown"  # fallback if 'Eyes' attribute is not found
+        data['eyes'] = "Unknown"  # set "Unknown "if 'Eyes' attribute is not found
 
     assert isinstance(data, dict), f'get_ape_info{ape_id} should return a dict'
     assert all([a in data.keys() for a in

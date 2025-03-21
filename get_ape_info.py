@@ -15,10 +15,12 @@ with open('ape_abi.json', 'r') as f:
 
 ############################
 # Connect to an Ethereum node
-api_url = ""  # YOU WILL NEED TO PROVIDE THE URL OF AN ETHEREUM NODE
+api_url = "https://mainnet.infura.io/v3/03016c3bbdb5494f962fcd2d8ac441f1"  # YOU WILL NEED TO PROVIDE THE URL OF AN ETHEREUM NODE
 provider = HTTPProvider(api_url)
 web3 = Web3(provider)
 
+# load the Bored Ape contract
+contract = web3.eth.contract(address=contract_address, abi=abi)
 
 def get_ape_info(ape_id):
     assert isinstance(ape_id, int), f"{ape_id} is not an int"
@@ -28,6 +30,22 @@ def get_ape_info(ape_id):
     data = {'owner': "", 'image': "", 'eyes': ""}
 
     # YOUR CODE HERE
+    # step 1: get the owner of the ape
+    owner = contract.functions.ownerOf(ape_id).call()
+    data['owner'] = owner
+
+    # step 2: get the tokenURI for the ape
+    token_uri = contract.functions.tokenURI(ape_id).call()
+    
+    # step 3: Fetch metadata from IPFS
+    # Replace 'ipfs://' with 'https://ipfs.io/ipfs/' to use the public IPFS gateway
+    ipfs_url = token_uri.replace("ipfs://", "https://ipfs.io/ipfs/")
+    response = requests.get(ipfs_url)
+    metadata = response.json()
+
+    # step 4: Extract image and eyes attributes
+    data['image'] = metadata['image']
+    data['eyes'] = metadata['attributes'][1]['value']  # assume 'eyes' is the second attribute
 
     assert isinstance(data, dict), f'get_ape_info{ape_id} should return a dict'
     assert all([a in data.keys() for a in
